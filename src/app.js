@@ -2,7 +2,10 @@ const express = require("express");
 const router = require("./router/user.routes.js");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
+const cors = require('cors'); // 1. Import cors
 const app = express();
+
+app.use(cors()); // 2. Sử dụng cors
 const PORT = 8080;
 dotenv.config();
 // parse application/x-www-form-urlencoded
