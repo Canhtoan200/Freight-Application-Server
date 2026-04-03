@@ -6,6 +6,7 @@ const cors = require('cors'); // 1. Import cors
 const app = express();
 
 app.use(cors()); // 2. Sử dụng cors
+app.use(express.json());
 const PORT = 8080;
 dotenv.config();
 // parse application/x-www-form-urlencoded
