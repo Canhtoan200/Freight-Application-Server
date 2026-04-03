@@ -1,6 +1,6 @@
 const database = require("../configs/db.configs.js");
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
+const bscrypt = require("bcrypt");
 require("dotenv").config();
 
 // async function login(username, password) {
@@ -21,7 +21,7 @@ async function login(email, password) {
     const user = rows[0];
     if (!user) return null;
     // nếu có user rồi thì so sánh password người dùng nhập vào với password đã được mã hóa trong database
-    const match = await bcrypt.compare(password, user.password_hash);
+    const match = await bscrypt.compare(password, user.password_hash);
     if (!match) return null;
 
     const secret = process.env.SECRET_KEY_JWT;
@@ -36,20 +36,26 @@ async function login(email, password) {
     return { token };
 }
 async function register(position, email, password) {
-    // trước khi thêm vào database thì phải mã hóa mật khẩu của user đi
-    // để mã hóa dùng thư viện bscript
-    bscript.hash(password,10,async (err, hashPassword)=>{
-        if(err){
-            console.log(err);
-        }else{
-            const query = `INSERT INTO user (position, email, password_hash) VALUES ('${position}', '${email}', '${hashPassword}');`;
-            let result = await database.execute(query);
-            if(result){
-                return result[0].insertId;
-            }
-            return false;
+    try {
+        // 1. Đợi mã hóa mật khẩu xong (Dùng await thay vì callback)
+        const hashPassword = await bscrypt.hash(password, 10);
+
+        // 2. Thực hiện câu lệnh INSERT
+        // Dùng dấu ? để bảo mật (tránh SQL Injection)
+        const query = 'INSERT INTO user (position, email, password_hash) VALUES (?, ?, ?)';
+        const [result] = await database.execute(query, [position, email, hashPassword]);
+
+        // 3. Trả về ID mới
+        if (result && result.insertId) {
+            console.log("Đã tạo User với ID:", result.insertId);
+            return result.insertId;
         }
-    })
+
+        return false;
+    } catch (err) {
+        console.error("Lỗi đăng ký:", err);
+        return false;
+    }
 }
 module.exports = {
     login,

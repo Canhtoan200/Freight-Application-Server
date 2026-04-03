@@ -7,6 +7,11 @@ const pool = mysql.createPool({
     password: process.env.DB_PASSWORD,
     port: process.env.DB_PORT,
     user: process.env.DB_USER,
+    ssl: {
+        rejectUnauthorized: false          // Quan trọng: Aiven yêu cầu SSL để kết nối
+    },
+    waitForConnections: true,
+    connectionLimit: 10,
 })
 const database = pool.promise();
 module.exports = database;
