@@ -6,12 +6,12 @@ async function getAllOrders() {
     const [rows] = await database.execute('SELECT * FROM shipping_orders');
     return rows;
 }
-async function createGuestOrder(order_dispatch_date, sender_name, receiver_name, sender_address, receiver_address, sender_phone_number, receiver_phone_number, goods_quantity, goods_weight, goods_volume, note, handling_instruction, shipping_status) {
+async function createGuestOrder(order_name, sender_name, receiver_name, sender_address, receiver_address, sender_phone_number, receiver_phone_number, goods_quantity, goods_weight, goods_volume, note, handling_instruction, shipping_status) {
     try {
         // 1. Thực hiện câu lệnh INSERT để tạo đơn hàng mới
         const insertQuery = `
                 INSERT INTO shipping_orders (
-                    order_dispatch_date, sender_name, receiver_name, 
+                    order_name, sender_name, receiver_name, 
                     sender_address, receiver_address, sender_phone_number, 
                     receiver_phone_number, goods_quantity, goods_weight, 
                     goods_volume, note, handling_instruction, shipping_status
@@ -19,7 +19,7 @@ async function createGuestOrder(order_dispatch_date, sender_name, receiver_name,
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
         const [insertResult] = await database.execute(insertQuery, [
-            order_dispatch_date, sender_name, receiver_name,
+            order_name, sender_name, receiver_name,
             sender_address, receiver_address, sender_phone_number,
             receiver_phone_number, goods_quantity, goods_weight,
             goods_volume, note, handling_instruction, shipping_status
