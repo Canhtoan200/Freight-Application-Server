@@ -1,5 +1,6 @@
 const express = require("express");
-const router = require("./router/user.routes.js");
+const userRouter = require("./router/user.routes.js");
+const orderRouter = require("./router/order.routes.js");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
 const cors = require('cors'); // 1. Import cors
@@ -15,7 +16,10 @@ app.use(bodyParser.urlencoded({ extended: false }))
 // parse application/json
 app.use(bodyParser.json())
 
-app.use("/", router);
+// Đăng ký các router
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/orders", orderRouter); 
+
 app.listen(PORT, ()=>{
     console.log(`Server đang lắng nghe http://localhost:${PORT}`);
 })
