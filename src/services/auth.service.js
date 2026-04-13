@@ -33,7 +33,6 @@ async function login(email, password) {
         { expiresIn: '1h' }
     );
     const position = user.position;
-    const email = user.email;
 
     return { position, email, token };
 }
