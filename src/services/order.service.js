@@ -14,15 +14,15 @@ async function createGuestOrder(order_name, sender_name, receiver_name, sender_a
                     order_name, sender_name, receiver_name, 
                     sender_address, receiver_address, sender_phone_number, 
                     receiver_phone_number, goods_quantity, goods_weight, 
-                    goods_volume, note, handling_instruction, shipping_status
+                    goods_volume, note, handling_instruction, shipping_status, creator_email
                 ) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
         const [insertResult] = await database.execute(insertQuery, [
             order_name, sender_name, receiver_name,
             sender_address, receiver_address, sender_phone_number,
             receiver_phone_number, goods_quantity, goods_weight,
-            goods_volume, note, handling_instruction, shipping_status
+            goods_volume, note, handling_instruction, shipping_status, creator_email
         ]);
         // 3. Trả về ID mới
         if (insertResult && insertResult.insertId) {
