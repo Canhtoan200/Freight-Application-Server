@@ -33,8 +33,9 @@ async function login(email, password) {
         { expiresIn: '1h' }
     );
     const position = user.position;
+    const organization = user.organization;
 
-    return { position, email, token };
+    return { position, organization, token };
 }
 async function register(position, email, password) {
     try {
