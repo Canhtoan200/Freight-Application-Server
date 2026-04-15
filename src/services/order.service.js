@@ -6,7 +6,7 @@ async function getAllOrders() {
     const [rows] = await database.execute('SELECT * FROM shipping_orders');
     return rows;
 }
-async function createGuestOrder(order_name, sender_name, receiver_name, sender_address, receiver_address, sender_phone_number, receiver_phone_number, goods_quantity, goods_weight, goods_volume, note, handling_instruction, shipping_status, creator_email) {
+async function createGuestOrder(order_name, sender_name, receiver_name, sender_address, receiver_address, sender_phone_number, receiver_phone_number, goods_quantity, goods_weight, goods_volume, note, handling_instruction, shipping_status, organization) {
     try {
         // 1. Thực hiện câu lệnh INSERT để tạo đơn hàng mới
         const insertQuery = `
@@ -14,7 +14,7 @@ async function createGuestOrder(order_name, sender_name, receiver_name, sender_a
                     order_name, sender_name, receiver_name, 
                     sender_address, receiver_address, sender_phone_number, 
                     receiver_phone_number, goods_quantity, goods_weight, 
-                    goods_volume, note, handling_instruction, shipping_status, creator_email
+                    goods_volume, note, handling_instruction, shipping_status, organization
                 ) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
@@ -22,7 +22,7 @@ async function createGuestOrder(order_name, sender_name, receiver_name, sender_a
             order_name, sender_name, receiver_name,
             sender_address, receiver_address, sender_phone_number,
             receiver_phone_number, goods_quantity, goods_weight,
-            goods_volume, note, handling_instruction, shipping_status, creator_email
+            goods_volume, note, handling_instruction, shipping_status, organization
         ]);
         // 3. Trả về ID mới
         if (insertResult && insertResult.insertId) {
