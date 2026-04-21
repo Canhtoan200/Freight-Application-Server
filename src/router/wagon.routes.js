@@ -12,7 +12,6 @@ wagonRouter.post("/createWagonOrder", (req, res) =>{
 wagonRouter.get("/getWagonDetail", (req, res) =>{
     WagonController.getWagonDetail(req, res);
 });
-
 wagonRouter.post("/createWagonDetail", (req, res) =>{
     WagonController.createWagonDetail(req, res);
 });
