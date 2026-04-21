@@ -9,8 +9,8 @@ wagonRouter.get("/getAllWagons", (req, res) =>{
 wagonRouter.post("/createWagonOrder", (req, res) =>{
     WagonController.createWagonOrder(req, res);
 });
-wagonRouter.get("/getWagonDetail", (req, res) =>{
-    WagonController.getWagonDetail(req, res);
+wagonRouter.get("/getAllWagonDetails", (req, res) =>{
+    WagonController.getAllWagonDetails(req, res);
 });
 wagonRouter.post("/createWagonDetail", (req, res) =>{
     WagonController.createWagonDetail(req, res);
