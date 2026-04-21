@@ -29,6 +29,11 @@ async function createWagonOrder(wagon_number, wagon_departure_date) {
         throw err; // Ném lỗi để controller có thể xử lý
     }
 }
+async function getAllWagonDetails() {
+    // thực hiện truy vấn để lấy tất cả các đơn hàng
+    const [rows] = await database.execute('SELECT * FROM wagon_details');
+    return rows;
+}
 async function createWagonDetail (WagonIDs, OrderIDs){
     if (!WagonIDs || !OrderIDs || !Array.isArray(OrderIDs)) {
         return { message: "Dữ liệu không hợp lệ" };
@@ -54,5 +59,6 @@ async function createWagonDetail (WagonIDs, OrderIDs){
 module.exports = {
     getAllWagons,
     createWagonOrder,
-    createWagonDetail
+    createWagonDetail,
+    getAllWagonDetails
 }
