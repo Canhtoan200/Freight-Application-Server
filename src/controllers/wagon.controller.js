@@ -15,7 +15,7 @@ async function createWagonOrder (req, res){
     })
 }
 async function getWagonDetailID (req, res){
-    const { WagonIDs } = req.query;
+    const { WagonIDs } = req.body;
     const wagonDetails = await wagonService.getWagonDetailID(WagonIDs);
     res.status(200).json({
         data: wagonDetails
