@@ -14,9 +14,9 @@ async function createWagonOrder (req, res){
         message: "Create new wagon success with ID: " + wagonId
     })
 }
-async function getAllWagonDetails (req, res){
-    const wagonDetails = await wagonService.getAllWagonDetails();
-    console.log(wagonDetails);
+async function getWagonDetailID (req, res){
+    const { WagonIDs } = req.body;
+    const wagonDetails = await wagonService.getWagonDetailID(WagonIDs);
     res.status(200).json({
         data: wagonDetails
     })
@@ -26,10 +26,9 @@ async function createWagonDetail (req, res){
     const result = await wagonService.createWagonDetail(WagonIDs, OrderIDs);
     res.status(200).json(result);
 }
-
 module.exports = {
     getAllWagons,
     createWagonOrder,
-    getAllWagonDetails,
+    getWagonDetailID,
     createWagonDetail
 }
