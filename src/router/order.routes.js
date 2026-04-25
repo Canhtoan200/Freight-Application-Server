@@ -6,7 +6,7 @@ const orderRouter = express.Router();
 orderRouter.get("/getAllOrders", (req, res) =>{
     OrderController.getAllOrders(req, res);
 });
-orderRouter.get("/getAllOrderByStatus", (req, res) =>{
+orderRouter.post("/getAllOrderByStatus", (req, res) =>{
     OrderController.getAllOrderByStatus(req, res);
 });
 orderRouter.post("/createGuestOrder", (req, res) =>{
