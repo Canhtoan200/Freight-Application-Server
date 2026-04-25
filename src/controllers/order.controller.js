@@ -7,6 +7,14 @@ async function getAllOrders (req, res){
         data: orders
     })
 }
+async function getAllOrderByStatus (req, res){
+     const { shipping_status } = req.body;
+    const orders = await orderService.getAllOrderByStatus(shipping_status);
+    console.log(orders);
+    res.status(200).json({
+        data: orders
+    })
+}
 async function createGuestOrder (req, res){
     const { order_name, sender_name, receiver_name, sender_address, receiver_address, sender_phone_number, receiver_phone_number, goods_quantity, goods_weight, goods_volume, note, handling_instruction, shipping_status, organization } = req.body;
     const orderId = await orderService.createGuestOrder(order_name, sender_name, receiver_name, sender_address, receiver_address, sender_phone_number, receiver_phone_number, goods_quantity, goods_weight, goods_volume, note, handling_instruction, shipping_status, organization);
@@ -16,5 +24,6 @@ async function createGuestOrder (req, res){
 }
 module.exports = {
     getAllOrders,
+    getAllOrderByStatus,
     createGuestOrder
 }
