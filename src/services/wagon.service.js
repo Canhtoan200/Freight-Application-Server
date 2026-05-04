@@ -6,16 +6,16 @@ async function getAllWagons() {
     const [rows] = await database.execute('SELECT * FROM shipping_wagons');
     return rows;
 }
-async function createWagonOrder(wagon_number, wagon_departure_date) {
+async function createWagonOrder(wagon_number, wagon_departure_date, wagon_route) {
     try {
         // 1. Thực hiện câu lệnh INSERT để tạo đơn hàng mới
         const insertQuery = `
                 INSERT INTO shipping_wagons (
-                    wagon_number, wagon_departure_date
-                ) VALUES (?, ?)
+                    wagon_number, wagon_departure_date, wagon_route
+                ) VALUES (?, ?, ?)
             `;
         const [insertResult] = await database.execute(insertQuery, [
-            wagon_number, wagon_departure_date
+            wagon_number, wagon_departure_date, wagon_route
         ]);
         // 3. Trả về ID mới
         if (insertResult && insertResult.insertId) {
