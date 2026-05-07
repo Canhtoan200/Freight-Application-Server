@@ -2,6 +2,7 @@ const express = require("express");
 const userRouter = require("./router/user.routes.js");
 const orderRouter = require("./router/order.routes.js");
 const wagonRouter = require("./router/wagon.routes.js");
+const driverRouter = require("./router/driver.routes.js");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
 const cors = require('cors'); // 1. Import cors
@@ -21,6 +22,7 @@ app.use(bodyParser.json())
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/orders", orderRouter); 
 app.use("/api/v1/wagons", wagonRouter);
+app.use("/api/v1/drivers", driverRouter);
 
 app.listen(PORT, ()=>{
     console.log(`Server đang lắng nghe http://localhost:${PORT}`);
