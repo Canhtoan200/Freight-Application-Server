@@ -44,7 +44,7 @@ async function createDriverOrderDetail (DriverIDs, OrderIDs){
     const sql = "INSERT INTO driver_order_details (DriverIDs, OrderIDs) VALUES ?";
     // Thêm thông tin tài xế vào bảng đơn hàng khi tạo chi tiết đơn hàng
     const selectDriverSql = "SELECT driver_name, driver_license_plate_number, driver_phone_number FROM drivers WHERE DriverIDs = ?";
-    const updateOrderSql = "UPDATE shipping_orders SET driver_name = ?, driver_license_plate = ?, driver_phone_number = ? WHERE OrderID = ?";
+    const updateOrderSql = "UPDATE shipping_orders SET driver_name = ?, driver_license_plate = ?, driver_phone_number = ?, shipping_status = 'Tài xế đang đi!' WHERE OrderID = ?";
     try {
         // Thực hiện chèn nhiều dòng cùng lúc
         const [result] = await database.query(sql, [values]);
