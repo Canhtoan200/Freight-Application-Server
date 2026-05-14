@@ -8,8 +8,8 @@ async function getAllWagons (req, res){
     })
 }
 async function createWagonOrder (req, res){
-    const { wagon_number, wagon_departure_date, wagon_route } = req.body;
-    const wagonId = await wagonService.createWagonOrder(wagon_number, wagon_departure_date, wagon_route);
+    const { wagon_number, wagon_departure_date, wagon_arrival_date, wagon_route } = req.body;
+    const wagonId = await wagonService.createWagonOrder(wagon_number, wagon_departure_date, wagon_arrival_date, wagon_route);
     res.status(200).json({
         message: "Create new wagon success with ID: " + wagonId
     })

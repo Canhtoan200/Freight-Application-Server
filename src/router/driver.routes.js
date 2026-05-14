@@ -6,8 +6,13 @@ const driverRouter = express.Router();
 driverRouter.get("/getAllDrivers", (req, res) =>{
     DriverController.getAllDrivers(req, res);
 });
+driverRouter.get("/getAllDriverOrders", (req, res) =>{
+    DriverController.getAllDriverOrders(req, res);
+});
 driverRouter.post("/createDriver", (req, res) =>{
     DriverController.createDriver(req, res);
 });
-
+driverRouter.post("/createDriverOrderDetail", (req, res) =>{
+    DriverController.createDriverOrderDetail(req, res);
+});
 module.exports = driverRouter;
