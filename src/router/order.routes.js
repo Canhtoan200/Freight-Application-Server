@@ -12,4 +12,7 @@ orderRouter.post("/getAllOrderByStatus", (req, res) =>{
 orderRouter.post("/createGuestOrder", (req, res) =>{
     OrderController.createGuestOrder(req, res);
 });
+orderRouter.put("/updateShippingStatus", (req, res) =>{
+    OrderController.updateShippingStatus(req, res);
+});
 module.exports = orderRouter;

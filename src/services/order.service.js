@@ -41,8 +41,21 @@ async function createGuestOrder(order_name, sender_name, receiver_name, sender_a
         throw err; // Ném lỗi để controller có thể xử lý
     }
 }
+async function updateShippingStatus(OrderID, shipping_status) {
+    try {
+        const [result] = await database.execute(
+            'UPDATE shipping_orders SET shipping_status = ? WHERE OrderID = ?',
+            [shipping_status, OrderID]
+        );
+        return result.affectedRows > 0;
+    } catch (err) {
+        console.error("Lỗi cập nhật trạng thái:", err);
+        throw err;
+    }
+}
 module.exports = {
     getAllOrders,
     getAllOrderByStatus,
-    createGuestOrder
+    createGuestOrder,
+    updateShippingStatus
 }

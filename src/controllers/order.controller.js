@@ -22,8 +22,21 @@ async function createGuestOrder (req, res){
         message: "Create new order success with ID: " + orderId
     })
 }
+async function updateShippingStatus(req, res) {
+    const { OrderID, shipping_status } = req.body;
+    if (!OrderID || !shipping_status) {
+        return res.status(400).json({ message: "OrderID và shipping_status là bắt buộc." });
+    }
+    const success = await orderService.updateShippingStatus(OrderID, shipping_status);
+    if (success) {
+        res.status(200).json({ message: "Cập nhật trạng thái thành công." });
+    } else {
+        res.status(404).json({ message: "Không tìm thấy đơn hàng." });
+    }
+}
 module.exports = {
     getAllOrders,
     getAllOrderByStatus,
-    createGuestOrder
+    createGuestOrder,
+    updateShippingStatus
 }
