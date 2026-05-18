@@ -43,32 +43,35 @@ async function getWagonDetailID(WagonID) {
     return allOrders;
 }
 async function createWagonDetail (WagonIDs, OrderIDs){
-    if (!WagonIDs || !OrderIDs || !Array.isArray(OrderIDs)) {
+    if (!WagonIDs || !OrderIDs) {
         return { message: "Dữ liệu không hợp lệ" };
     }
-    // Chuẩn bị dữ liệu cho Bulk Insert: [[WagonIDs, id1], [WagonIDs, id2], ...]
-    const values = OrderIDs.map(id => [WagonIDs, id]);
-
-    const sql = "INSERT INTO wagon_details (WagonIDs, OrderIDs) VALUES ?";
-    // Thêm số toa tàu vào bảng đơn hàng khi tạo chi tiết toa tàu
-    const selectWagonSql = "SELECT wagon_number, wagon_departure_date, wagon_arrival_date FROM shipping_wagons WHERE WagonID = ?";
-    const updateOrderSql = "UPDATE shipping_orders SET wagon_number = ? WHERE OrderID = ?";
-    const updateWargonDepartureDateSql = "UPDATE shipping_orders SET wagon_departure_date = ? WHERE OrderID = ?";
-    const updateWargonArrivalDateSql = "UPDATE shipping_orders SET wagon_arrival_date = ?, shipping_status = 'Đã lên toa' WHERE OrderID = ?";
     try {
-        // Thực hiện chèn nhiều dòng cùng lúc
-        const [result] = await database.query(sql, [values]);
-        // Lấy số toa tàu và ngày khởi hành từ bảng shipping_wagons
+        // Kiểm tra đơn hàng đã được thêm vào toa nào chưa
+        const [existing] = await database.execute(
+            "SELECT * FROM wagon_details WHERE OrderIDs = ?",
+            [OrderIDs]
+        );
+        if (existing.length > 0) {
+            return { message: "Đơn hàng này đã được thêm vào một toa tàu rồi." };
+        }
+
+        const sql = "INSERT INTO wagon_details (WagonIDs, OrderIDs) VALUES (?, ?)";
+        const selectWagonSql = "SELECT wagon_number, wagon_departure_date, wagon_arrival_date FROM shipping_wagons WHERE WagonID = ?";
+        const updateOrderSql = "UPDATE shipping_orders SET wagon_number = ? WHERE OrderID = ?";
+        const updateWargonDepartureDateSql = "UPDATE shipping_orders SET wagon_departure_date = ? WHERE OrderID = ?";
+        const updateWargonArrivalDateSql = "UPDATE shipping_orders SET wagon_arrival_date = ?, shipping_status = 'Đã lên toa' WHERE OrderID = ?";
+
+        const [result] = await database.execute(sql, [WagonIDs, OrderIDs]);
         const [wagonRows] = await database.execute(selectWagonSql, [WagonIDs]);
         const wagonNumber = wagonRows.length > 0 ? wagonRows[0].wagon_number : null;
         const wagonDepartureDate = wagonRows.length > 0 ? wagonRows[0].wagon_departure_date : null;
         const wagonArrivalDate = wagonRows.length > 0 ? wagonRows[0].wagon_arrival_date : null;
-        // Cập nhật số toa tàu và ngày khởi hành cho từng đơn hàng
-        for (const orderID of OrderIDs) {
-            await database.execute(updateOrderSql, [wagonNumber, orderID]);
-            await database.execute(updateWargonDepartureDateSql, [wagonDepartureDate, orderID]);
-            await database.execute(updateWargonArrivalDateSql, [wagonArrivalDate, orderID]);
-        }
+
+        await database.execute(updateOrderSql, [wagonNumber, OrderIDs]);
+        await database.execute(updateWargonDepartureDateSql, [wagonDepartureDate, OrderIDs]);
+        await database.execute(updateWargonArrivalDateSql, [wagonArrivalDate, OrderIDs]);
+
         return ({
             message: "Đã thêm đơn hàng vào chi tiết toa tàu thành công",
             affectedRows: result.affectedRows
