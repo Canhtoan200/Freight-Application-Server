@@ -54,7 +54,7 @@ async function createWagonDetail (WagonIDs, OrderIDs){
     const selectWagonSql = "SELECT wagon_number, wagon_departure_date, wagon_arrival_date FROM shipping_wagons WHERE WagonID = ?";
     const updateOrderSql = "UPDATE shipping_orders SET wagon_number = ? WHERE OrderID = ?";
     const updateWargonDepartureDateSql = "UPDATE shipping_orders SET wagon_departure_date = ? WHERE OrderID = ?";
-    const updateWargonArrivalDateSql = "UPDATE shipping_orders SET wagon_arrival_date = ? WHERE OrderID = ?";
+    const updateWargonArrivalDateSql = "UPDATE shipping_orders SET wagon_arrival_date = ?, shipping_status = 'Đã lên toa' WHERE OrderID = ?";
     try {
         // Thực hiện chèn nhiều dòng cùng lúc
         const [result] = await database.query(sql, [values]);
