@@ -1,4 +1,5 @@
 const database = require("../configs/db.configs.js");
+const { get } = require("../router/driver.routes.js");
 require("dotenv").config();
 
 async function getAllDrivers() {
@@ -9,6 +10,14 @@ async function getAllDrivers() {
 async function getAllDriverOrders() {
     // thực hiện truy vấn để lấy tất cả các đơn hàng của tài xế
     const [rows] = await database.execute('SELECT * FROM driver_order_details');
+    return rows;
+}
+async function getDriverIDBasedOnUserID(userID) {
+    const [rows] = await database.execute('SELECT DriverIDs FROM drivers WHERE accountID = ?', [userID]);
+    return rows.length > 0 ? rows[0].DriverIDs : null;
+}
+async function getDriverOrderBasedOnDriverID(driverID) {
+    const [rows] = await database.execute('SELECT * FROM driver_order_details WHERE DriverIDs = ?', [driverID]);
     return rows;
 }
 async function createDriver(driver_name, driver_link, driver_license_plate_number, driver_phone_number, amount_of_gas, money_amount_of_gas, the_remaining_volume_of_the_car, the_remaining_weight_of_the_car, drop_off_distance) {
@@ -69,6 +78,8 @@ async function createDriverOrderDetail (DriverIDs, OrderIDs){
 module.exports = {
     getAllDrivers,
     getAllDriverOrders,
+    getDriverIDBasedOnUserID,
+    getDriverOrderBasedOnDriverID,
     createDriver,
     createDriverOrderDetail
 }

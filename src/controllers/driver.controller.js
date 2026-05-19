@@ -14,6 +14,27 @@ async function getAllDriverOrders (req, res){
         data: driverOrders
     })
 }
+async function getAllDriverOrders (req, res){
+    const driverOrders = await driverService.getAllDriverOrders();
+    console.log(driverOrders);
+    res.status(200).json({
+        data: driverOrders
+    })
+}
+async function getDriverIDBasedOnUserID (req, res){
+    const { userID } = req.query;
+    const driverID = await driverService.getDriverIDBasedOnUserID(userID);
+    res.status(200).json({
+        data: driverID
+    })
+}
+async function getDriverOrderBasedOnDriverID (req, res){
+    const { driverID } = req.query;
+    const driverOrders = await driverService.getDriverOrderBasedOnDriverID(driverID);
+    res.status(200).json({
+        data: driverOrders
+    })
+}
 async function createDriver (req, res){
     const { driver_name, driver_link, driver_license_plate_number, driver_phone_number, amount_of_gas, money_amount_of_gas, the_remaining_volume_of_the_car, the_remaining_weight_of_the_car, drop_off_distance } = req.body;
     const driverId = await driverService.createDriver(driver_name, driver_link, driver_license_plate_number, driver_phone_number, amount_of_gas, money_amount_of_gas, the_remaining_volume_of_the_car, the_remaining_weight_of_the_car, drop_off_distance);
@@ -29,6 +50,8 @@ async function createDriverOrderDetail (req, res){
 module.exports = {
     getAllDrivers,
     getAllDriverOrders,
+    getDriverIDBasedOnUserID,
+    getDriverOrderBasedOnDriverID,
     createDriver,
     createDriverOrderDetail
 }
