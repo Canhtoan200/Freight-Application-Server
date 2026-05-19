@@ -34,8 +34,9 @@ async function login(email, password) {
     );
     const position = user.position;
     const organization = user.organization;
+    const userID = user.ID;
 
-    return { position, organization, token };
+    return { position, organization, token, userID };
 }
 async function register(position, email, password) {
     try {
