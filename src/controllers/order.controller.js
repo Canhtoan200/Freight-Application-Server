@@ -2,15 +2,20 @@ const orderService = require("../services/order.service.js");
 
 async function getAllOrders (req, res){
     const orders = await orderService.getAllOrders();
-    console.log(orders);
     res.status(200).json({
         data: orders
+    })
+}
+async function getOrderByID (req, res){
+    const { OrderID } = req.query;
+    const order = await orderService.getOrderByID(OrderID);
+    res.status(200).json({
+        data: order
     })
 }
 async function getAllOrderByStatus (req, res){
      const { shipping_status } = req.body;
     const orders = await orderService.getAllOrderByStatus(shipping_status);
-    console.log(orders);
     res.status(200).json({
         data: orders
     })
@@ -36,6 +41,7 @@ async function updateShippingStatus(req, res) {
 }
 module.exports = {
     getAllOrders,
+    getOrderByID,
     getAllOrderByStatus,
     createGuestOrder,
     updateShippingStatus

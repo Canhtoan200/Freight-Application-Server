@@ -6,6 +6,11 @@ async function getAllOrders() {
     const [rows] = await database.execute('SELECT * FROM shipping_orders');
     return rows;
 }
+async function getOrderByID(OrderID) {
+    // thực hiện truy vấn để lấy đơn hàng theo ID
+    const [rows] = await database.execute('SELECT * FROM shipping_orders WHERE OrderID = ?', [OrderID]);
+    return rows[0];
+}
 async function getAllOrderByStatus(shipping_status) {
     // thực hiện truy vấn để lấy tất cả các đơn hàng
     const [rows] = await database.execute('SELECT * FROM shipping_orders WHERE shipping_status = ?',[shipping_status]);
@@ -55,6 +60,7 @@ async function updateShippingStatus(OrderID, shipping_status) {
 }
 module.exports = {
     getAllOrders,
+    getOrderByID,
     getAllOrderByStatus,
     createGuestOrder,
     updateShippingStatus

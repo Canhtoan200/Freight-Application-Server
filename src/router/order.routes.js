@@ -6,6 +6,9 @@ const orderRouter = express.Router();
 orderRouter.get("/getAllOrders", (req, res) =>{
     OrderController.getAllOrders(req, res);
 });
+orderRouter.get("/getOrderByID", (req, res) =>{
+    OrderController.getOrderByID(req, res);
+});
 orderRouter.post("/getAllOrderByStatus", (req, res) =>{
     OrderController.getAllOrderByStatus(req, res);
 });
