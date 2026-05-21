@@ -12,6 +12,10 @@ async function getAllDriverOrders() {
     const [rows] = await database.execute('SELECT * FROM driver_order_details');
     return rows;
 }
+async function getDriverByDriverID(driverID) {
+    const [rows] = await database.execute('SELECT * FROM drivers WHERE DriverIDs = ?', [driverID]);
+    return rows.length > 0 ? rows[0] : null;
+}
 async function getDriverIDBasedOnUserID(userID) {
     const [rows] = await database.execute('SELECT DriverIDs FROM drivers WHERE accountID = ?', [userID]);
     return rows.length > 0 ? rows[0].DriverIDs : null;
@@ -78,6 +82,7 @@ async function createDriverOrderDetail (DriverIDs, OrderIDs){
 module.exports = {
     getAllDrivers,
     getAllDriverOrders,
+    getDriverByDriverID,
     getDriverIDBasedOnUserID,
     getDriverOrderBasedOnDriverID,
     createDriver,

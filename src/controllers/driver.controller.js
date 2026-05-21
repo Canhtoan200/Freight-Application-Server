@@ -1,3 +1,4 @@
+const { get } = require("../router/driver.routes.js");
 const driverService = require("../services/driver.service.js");
 
 async function getAllDrivers (req, res){
@@ -19,6 +20,13 @@ async function getAllDriverOrders (req, res){
     console.log(driverOrders);
     res.status(200).json({
         data: driverOrders
+    })
+}
+async function getDriverByDriverID (req, res){
+    const { driverID } = req.query;
+    const driver = await driverService.getDriverByDriverID(driverID);
+    res.status(200).json({
+        data: driver
     })
 }
 async function getDriverIDBasedOnUserID (req, res){
@@ -50,6 +58,7 @@ async function createDriverOrderDetail (req, res){
 module.exports = {
     getAllDrivers,
     getAllDriverOrders,
+    getDriverByDriverID,
     getDriverIDBasedOnUserID,
     getDriverOrderBasedOnDriverID,
     createDriver,

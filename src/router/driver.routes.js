@@ -9,6 +9,9 @@ driverRouter.get("/getAllDrivers", (req, res) =>{
 driverRouter.get("/getAllDriverOrders", (req, res) =>{
     DriverController.getAllDriverOrders(req, res);
 });
+driverRouter.get("/getDriverByDriverID", (req, res) =>{
+    DriverController.getDriverByDriverID(req, res);
+});
 driverRouter.get("/getDriverIDBasedOnUserID", (req, res) =>{
     DriverController.getDriverIDBasedOnUserID(req, res);
 });
