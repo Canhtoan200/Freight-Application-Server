@@ -18,4 +18,7 @@ orderRouter.post("/createGuestOrder", (req, res) =>{
 orderRouter.put("/updateShippingStatus", (req, res) =>{
     OrderController.updateShippingStatus(req, res);
 });
+orderRouter.post("/searchOrders", (req, res) =>{
+    OrderController.searchOrders(req, res);
+});
 module.exports = orderRouter;
