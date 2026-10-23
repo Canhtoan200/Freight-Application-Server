@@ -15,7 +15,7 @@ async function getOrderByID (req, res){
     })
 }
 async function getAllOrderByStatus (req, res){
-     const { shipping_status } = req.body;
+    const { shipping_status } = req.query;
     const orders = await orderService.getAllOrderByStatus(shipping_status);
     res.status(200).json({
         data: orders

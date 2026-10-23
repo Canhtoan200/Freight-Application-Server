@@ -9,7 +9,7 @@ orderRouter.get("/getAllOrders", (req, res) =>{
 orderRouter.get("/getOrderByID", (req, res) =>{
     OrderController.getOrderByID(req, res);
 });
-orderRouter.post("/getAllOrderByStatus", (req, res) =>{
+orderRouter.get("/getAllOrderByStatus", (req, res) =>{
     OrderController.getAllOrderByStatus(req, res);
 });
 orderRouter.post("/createGuestOrder", (req, res) =>{
