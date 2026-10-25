@@ -1,4 +1,5 @@
 const orderService = require("../services/order.service.js");
+const database = require("../configs/db.configs.js");
 const ExcelJS = require("exceljs");
 
 async function getAllOrders (req, res){
@@ -6,6 +7,28 @@ async function getAllOrders (req, res){
     res.status(200).json({
         data: orders
     })
+}
+async function getAllOrdersByOrganization(req, res) {
+    const userID = req.authenticatedUser?.id;
+    if (!userID) {
+        return res.status(401).json({ message: "Phiên đăng nhập không hợp lệ." });
+    }
+    const [users] = await database.execute(
+        "SELECT position, organization FROM user WHERE ID = ?",
+        [userID]
+    );
+    const user = users[0];
+    if (!user || user.position !== "Guest") {
+        return res.status(403).json({ message: "Tài khoản không có quyền theo dõi đơn hàng." });
+    }
+    if (!user.organization) {
+        return res.status(400).json({ message: "Tài khoản chưa thuộc tổ chức nào." });
+    }
+    const orders = await orderService.getOrdersByOrganization(user.organization);
+    return res.status(200).json({ data: orders });
+}
+async function getOrdersForAuthenticatedOrganization(req, res) {
+    return getAllOrdersByOrganization(req, res);
 }
 async function getOrderByID (req, res){
     const { OrderID } = req.query;
@@ -15,7 +38,7 @@ async function getOrderByID (req, res){
     })
 }
 async function getAllOrderByStatus (req, res){
-    const { shipping_status } = req.query;
+    const shipping_status = req.query.shipping_status ?? req.body?.shipping_status;
     const orders = await orderService.getAllOrderByStatus(shipping_status);
     res.status(200).json({
         data: orders
@@ -60,6 +83,8 @@ async function searchOrders(req, res) {
 
 module.exports = {
     getAllOrders,
+    getAllOrdersByOrganization,
+    getOrdersForAuthenticatedOrganization,
     getOrderByID,
     getAllOrderByStatus,
     createGuestOrder,

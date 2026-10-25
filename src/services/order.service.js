@@ -6,6 +6,17 @@ async function getAllOrders() {
     const [rows] = await database.execute('SELECT * FROM shipping_orders');
     return rows;
 }
+async function getOrdersByOrganization(organization) {
+    const [rows] = await database.execute(
+        `SELECT DISTINCT shipping_orders.*
+         FROM shipping_orders
+         INNER JOIN driver_order_details
+             ON driver_order_details.OrderIDs = shipping_orders.OrderID
+         WHERE driver_order_details.organization = ?`,
+        [organization]
+    );
+    return rows;
+}
 async function getOrderByID(OrderID) {
     // thực hiện truy vấn để lấy đơn hàng theo ID
     const [rows] = await database.execute('SELECT * FROM shipping_orders WHERE OrderID = ?', [OrderID]);
@@ -121,6 +132,7 @@ async function searchOrders({ wagon_departure_date, wagon_number, sender_name, r
 
 module.exports = {
     getAllOrders,
+    getOrdersByOrganization,
     getOrderByID,
     getAllOrderByStatus,
     createGuestOrder,
