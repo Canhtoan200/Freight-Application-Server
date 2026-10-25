@@ -9,23 +9,28 @@ async function getAllOrders (req, res){
     })
 }
 async function getAllOrdersByOrganization(req, res) {
-    const userID = req.authenticatedUser?.id;
-    if (!userID) {
-        return res.status(401).json({ message: "Phiên đăng nhập không hợp lệ." });
+    try {
+        const userID = req.authenticatedUser?.id;
+        if (!userID) {
+            return res.status(401).json({ message: "Phiên đăng nhập không hợp lệ." });
+        }
+        const [users] = await database.execute(
+            "SELECT position, organization FROM user WHERE ID = ?",
+            [userID]
+        );
+        const user = users[0];
+        if (!user || user.position !== "Guest") {
+            return res.status(403).json({ message: "Tài khoản không có quyền theo dõi đơn hàng." });
+        }
+        if (!user.organization) {
+            return res.status(400).json({ message: "Tài khoản chưa thuộc tổ chức nào." });
+        }
+        const orders = await orderService.getOrdersByOrganization(user.organization);
+        return res.status(200).json({ data: orders });
+    } catch (error) {
+        console.error("Lỗi lấy đơn hàng theo tổ chức:", error);
+        return res.status(500).json({ message: "Không thể tải đơn hàng theo tổ chức. Hãy kiểm tra log backend." });
     }
-    const [users] = await database.execute(
-        "SELECT position, organization FROM user WHERE ID = ?",
-        [userID]
-    );
-    const user = users[0];
-    if (!user || user.position !== "Guest") {
-        return res.status(403).json({ message: "Tài khoản không có quyền theo dõi đơn hàng." });
-    }
-    if (!user.organization) {
-        return res.status(400).json({ message: "Tài khoản chưa thuộc tổ chức nào." });
-    }
-    const orders = await orderService.getOrdersByOrganization(user.organization);
-    return res.status(200).json({ data: orders });
 }
 async function getOrdersForAuthenticatedOrganization(req, res) {
     return getAllOrdersByOrganization(req, res);
