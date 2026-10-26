@@ -26,7 +26,7 @@ orderRouter.get("/getAllOrderByStatus", (req, res) =>{
 orderRouter.post("/getAllOrderByStatus", (req, res) =>{
     OrderController.getAllOrderByStatus(req, res);
 });
-orderRouter.post("/createGuestOrder", (req, res) =>{
+orderRouter.post("/createGuestOrder", requireAuthenticatedUser, (req, res) =>{
     OrderController.createGuestOrder(req, res);
 });
 orderRouter.put("/updateShippingStatus", (req, res) =>{

@@ -10,10 +10,11 @@ async function getOrdersByOrganization(organization) {
     const [rows] = await database.execute(
         `SELECT DISTINCT shipping_orders.*
          FROM shipping_orders
-         INNER JOIN driver_order_details
+         LEFT JOIN driver_order_details
              ON driver_order_details.OrderIDs = shipping_orders.OrderID
-         WHERE driver_order_details.organization = ?`,
-        [organization]
+         WHERE shipping_orders.organization = ?
+            OR driver_order_details.organization = ?`,
+        [organization, organization]
     );
     return rows;
 }

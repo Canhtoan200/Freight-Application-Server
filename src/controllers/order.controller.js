@@ -50,10 +50,27 @@ async function getAllOrderByStatus (req, res){
     })
 }
 async function createGuestOrder (req, res){
-    const { order_name, sender_name, receiver_name, sender_address, receiver_address, sender_phone_number, receiver_phone_number, goods_quantity, goods_weight, goods_volume, note, handling_instruction, shipping_status, organization } = req.body;
+    const userID = req.authenticatedUser?.id;
+    if (!userID) {
+        return res.status(401).json({ message: "Phiên đăng nhập không hợp lệ." });
+    }
+    const [users] = await database.execute(
+        "SELECT position, organization FROM user WHERE ID = ?",
+        [userID]
+    );
+    const user = users[0];
+    if (!user || !["Guest", "Admin"].includes(user.position)) {
+        return res.status(403).json({ message: "Tài khoản không có quyền tạo đơn hàng." });
+    }
+    const organization = user.position === "Guest" ? user.organization : req.body.organization;
+    if (!organization) {
+        return res.status(400).json({ message: "Tài khoản chưa thuộc tổ chức nào." });
+    }
+    const { order_name, sender_name, receiver_name, sender_address, receiver_address, sender_phone_number, receiver_phone_number, goods_quantity, goods_weight, goods_volume, note, handling_instruction, shipping_status } = req.body;
     const orderId = await orderService.createGuestOrder(order_name, sender_name, receiver_name, sender_address, receiver_address, sender_phone_number, receiver_phone_number, goods_quantity, goods_weight, goods_volume, note, handling_instruction, shipping_status, organization);
     res.status(200).json({
-        message: "Create new order success with ID: " + orderId
+        message: "Create new order success with ID: " + orderId,
+        data: { OrderID: orderId }
     })
 }
 async function updateShippingStatus(req, res) {
