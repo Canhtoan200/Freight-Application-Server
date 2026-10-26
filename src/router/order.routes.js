@@ -53,4 +53,9 @@ orderRouter.put(
     requireAccountant,
     (req, res) => OrderController.saveDeliveryEvidence(req, res)
 );
+orderRouter.get(
+    "/guest/:OrderID/evidence",
+    requireAuthenticatedUser,
+    (req, res) => OrderController.getGuestDeliveryEvidence(req, res)
+);
 module.exports = orderRouter;

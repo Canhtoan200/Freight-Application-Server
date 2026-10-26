@@ -210,6 +210,31 @@ async function saveDeliveryEvidence(req, res) {
         return res.status(500).json({ message: "Không thể lưu ảnh biên bản giao nhận." });
     }
 }
+async function getGuestDeliveryEvidence(req, res) {
+    const orderId = parseOrderId(req.params.OrderID);
+    if (!orderId) {
+        return res.status(400).json({ message: "Mã đơn hàng không hợp lệ." });
+    }
+    try {
+        const [users] = await database.execute(
+            "SELECT position, organization FROM user WHERE ID = ?",
+            [req.authenticatedUser.id]
+        );
+        const user = users[0];
+        if (!user || user.position !== "Guest" || !user.organization) {
+            return res.status(403).json({ message: "Tài khoản không có quyền xem biên bản giao nhận." });
+        }
+        const order = await orderService.getOrderByID(orderId);
+        if (!order || order.organization !== user.organization) {
+            return res.status(404).json({ message: "Không tìm thấy đơn hàng thuộc tổ chức của bạn." });
+        }
+        const evidence = await orderService.getDeliveryEvidence(orderId);
+        return res.status(200).json({ data: evidence });
+    } catch (error) {
+        console.error("Lỗi tải biên bản giao nhận của khách:", error);
+        return res.status(500).json({ message: "Không thể tải biên bản giao nhận." });
+    }
+}
 
 module.exports = {
     getAllOrders,
@@ -222,5 +247,6 @@ module.exports = {
     searchOrders,
     getAccountantOrder,
     updateAccountantOrder,
-    saveDeliveryEvidence
+    saveDeliveryEvidence,
+    getGuestDeliveryEvidence
 }
