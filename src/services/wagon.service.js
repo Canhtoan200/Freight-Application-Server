@@ -43,42 +43,71 @@ async function getWagonDetailID(WagonID) {
     return allOrders;
 }
 async function createWagonDetail (WagonIDs, OrderIDs){
-    if (!WagonIDs || !OrderIDs) {
-        return { message: "Dữ liệu không hợp lệ" };
+    const orderIdValue = Array.isArray(OrderIDs)
+        ? (OrderIDs.length === 1 ? OrderIDs[0] : NaN)
+        : OrderIDs;
+    const wagonId = Number(WagonIDs);
+    const orderId = Number(orderIdValue);
+    if (!Number.isInteger(wagonId) || wagonId <= 0 || !Number.isInteger(orderId) || orderId <= 0) {
+        const error = new Error("Dữ liệu toa tàu hoặc đơn hàng không hợp lệ");
+        error.statusCode = 400;
+        throw error;
     }
+
+    const connection = await database.getConnection();
     try {
-        // Kiểm tra đơn hàng đã được thêm vào toa nào chưa
-        const [existing] = await database.execute(
-            "SELECT * FROM wagon_details WHERE OrderIDs = ?",
-            [OrderIDs]
+        await connection.beginTransaction();
+
+        const [wagonRows] = await connection.execute(
+            "SELECT wagon_number, wagon_departure_date, wagon_arrival_date FROM shipping_wagons WHERE WagonID = ? FOR UPDATE",
+            [wagonId]
+        );
+        if (wagonRows.length === 0) {
+            await connection.rollback();
+            return { message: "Không tìm thấy toa tàu.", affectedRows: 0, statusCode: 404 };
+        }
+
+        const [orderRows] = await connection.execute(
+            "SELECT OrderID FROM shipping_orders WHERE OrderID = ? FOR UPDATE",
+            [orderId]
+        );
+        if (orderRows.length === 0) {
+            await connection.rollback();
+            return { message: "Không tìm thấy đơn hàng.", affectedRows: 0, statusCode: 404 };
+        }
+
+        const [existing] = await connection.execute(
+            "SELECT OrderIDs FROM wagon_details WHERE OrderIDs = ? FOR UPDATE",
+            [orderId]
         );
         if (existing.length > 0) {
-            return { message: "Đơn hàng này đã được thêm vào một toa tàu rồi." };
+            await connection.rollback();
+            return { message: "Đơn hàng này đã được thêm vào một toa tàu rồi.", affectedRows: 0, statusCode: 409 };
         }
 
         const sql = "INSERT INTO wagon_details (WagonIDs, OrderIDs) VALUES (?, ?)";
-        const selectWagonSql = "SELECT wagon_number, wagon_departure_date, wagon_arrival_date FROM shipping_wagons WHERE WagonID = ?";
-        const updateOrderSql = "UPDATE shipping_orders SET wagon_number = ? WHERE OrderID = ?";
-        const updateWargonDepartureDateSql = "UPDATE shipping_orders SET wagon_departure_date = ? WHERE OrderID = ?";
-        const updateWargonArrivalDateSql = "UPDATE shipping_orders SET wagon_arrival_date = ?, shipping_status = 'Đã lên toa' WHERE OrderID = ?";
-
-        const [result] = await database.execute(sql, [WagonIDs, OrderIDs]);
-        const [wagonRows] = await database.execute(selectWagonSql, [WagonIDs]);
-        const wagonNumber = wagonRows.length > 0 ? wagonRows[0].wagon_number : null;
-        const wagonDepartureDate = wagonRows.length > 0 ? wagonRows[0].wagon_departure_date : null;
-        const wagonArrivalDate = wagonRows.length > 0 ? wagonRows[0].wagon_arrival_date : null;
-
-        await database.execute(updateOrderSql, [wagonNumber, OrderIDs]);
-        await database.execute(updateWargonDepartureDateSql, [wagonDepartureDate, OrderIDs]);
-        await database.execute(updateWargonArrivalDateSql, [wagonArrivalDate, OrderIDs]);
+        const wagon = wagonRows[0];
+        const [result] = await connection.execute(sql, [wagonId, orderId]);
+        await connection.execute(
+            "UPDATE shipping_orders SET wagon_number = ?, wagon_departure_date = ?, wagon_arrival_date = ?, shipping_status = 'Đã lên toa' WHERE OrderID = ?",
+            [wagon.wagon_number, wagon.wagon_departure_date, wagon.wagon_arrival_date, orderId]
+        );
+        await connection.commit();
 
         return ({
             message: "Đã thêm đơn hàng vào chi tiết toa tàu thành công",
-            affectedRows: result.affectedRows
+            affectedRows: result.affectedRows,
+            statusCode: 200
         });
     } catch (error) {
-        console.error("Lỗi khi tạo chi tiết toa tàu:", error);
-        return { message: "Lỗi server", error: error.message };
+        try {
+            await connection.rollback();
+        } catch (rollbackError) {
+            console.error("Lỗi rollback khi thêm đơn hàng vào toa tàu:", rollbackError);
+        }
+        throw error;
+    } finally {
+        connection.release();
     }
 }
 module.exports = {

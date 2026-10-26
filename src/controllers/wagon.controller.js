@@ -23,8 +23,16 @@ async function getWagonDetailID (req, res){
 }
 async function createWagonDetail (req, res){
     const { WagonIDs, OrderIDs } = req.body;
-    const result = await wagonService.createWagonDetail(WagonIDs, OrderIDs);
-    res.status(200).json(result);
+    try {
+        const result = await wagonService.createWagonDetail(WagonIDs, OrderIDs);
+        const { statusCode = 200, ...response } = result;
+        res.status(statusCode).json(response);
+    } catch (error) {
+        console.error("Lỗi khi thêm đơn hàng vào toa tàu:", error);
+        res.status(error.statusCode || 500).json({
+            message: error.statusCode ? error.message : "Không thể thêm đơn hàng vào toa tàu."
+        });
+    }
 }
 module.exports = {
     getAllWagons,
