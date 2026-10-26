@@ -64,11 +64,79 @@ async function updateShippingStatus(OrderID, shipping_status) {
             'UPDATE shipping_orders SET shipping_status = ? WHERE OrderID = ?',
             [shipping_status, OrderID]
         );
-        return result.affectedRows > 0;
+        if (result.affectedRows > 0) return true;
+        const [rows] = await database.execute(
+            "SELECT OrderID FROM shipping_orders WHERE OrderID = ?",
+            [OrderID]
+        );
+        return rows.length > 0;
     } catch (err) {
         console.error("Lỗi cập nhật trạng thái:", err);
         throw err;
     }
+}
+async function updateAccountantOrder(OrderID, fields) {
+    const columnNames = {
+        order_name: "order_name",
+        sender_name: "sender_name",
+        sender_address: "sender_address",
+        sender_phone_number: "sender_phone_number",
+        receiver_name: "receiver_name",
+        receiver_address: "receiver_address",
+        receiver_phone_number: "receiver_phone_number",
+        goods_quantity: "goods_quantity",
+        goods_weight: "goods_weight",
+        goods_volume: "goods_volume",
+        note: "note",
+        handling_instruction: "handling_instruction"
+    };
+    const entries = Object.entries(fields).filter(([key]) => columnNames[key]);
+    if (entries.length === 0) {
+        const error = new Error("Không có thông tin hợp lệ để cập nhật.");
+        error.statusCode = 400;
+        throw error;
+    }
+    const setClause = entries.map(([key]) => `\`${columnNames[key]}\` = ?`).join(", ");
+    const values = entries.map(([, value]) => value);
+    values.push(OrderID);
+    const [result] = await database.execute(
+        `UPDATE shipping_orders SET ${setClause} WHERE OrderID = ?`,
+        values
+    );
+    if (result.affectedRows > 0) return true;
+    const [rows] = await database.execute(
+        "SELECT OrderID FROM shipping_orders WHERE OrderID = ?",
+        [OrderID]
+    );
+    return rows.length > 0;
+}
+async function getDeliveryEvidence(OrderID) {
+    const [rows] = await database.execute(
+        "SELECT endpoint, image_data, mime_type, file_name, updated_at FROM order_delivery_evidence WHERE OrderID = ?",
+        [OrderID]
+    );
+    return rows.map((row) => ({
+        endpoint: row.endpoint,
+        imageData: row.image_data.toString("base64"),
+        mimeType: row.mime_type,
+        fileName: row.file_name,
+        updatedAt: row.updated_at
+    }));
+}
+async function saveDeliveryEvidence({ OrderID, endpoint, imageData, mimeType, fileName, userID }) {
+    await database.execute(
+        `INSERT INTO order_delivery_evidence
+            (OrderID, endpoint, image_data, mime_type, file_name, updated_by)
+         VALUES (?, ?, ?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE
+            image_data = VALUES(image_data),
+            mime_type = VALUES(mime_type),
+            file_name = VALUES(file_name),
+            updated_by = VALUES(updated_by),
+            updated_at = CURRENT_TIMESTAMP`,
+        [OrderID, endpoint, imageData, mimeType, fileName, userID]
+    );
+    return true;
 }
 async function searchOrders({ wagon_departure_date, wagon_number, sender_name, receiver_name }) {
     try {
@@ -138,5 +206,8 @@ module.exports = {
     getAllOrderByStatus,
     createGuestOrder,
     updateShippingStatus,
-    searchOrders
+    searchOrders,
+    updateAccountantOrder,
+    getDeliveryEvidence,
+    saveDeliveryEvidence
 }

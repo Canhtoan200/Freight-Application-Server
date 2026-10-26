@@ -24,4 +24,11 @@ function requireAuthenticatedUser(req, res, next) {
     }
 }
 
-module.exports = { requireAuthenticatedUser };
+function requireAccountant(req, res, next) {
+    if (req.authenticatedUser?.position !== "Accountant") {
+        return res.status(403).json({ message: "Chỉ kế toán mới được chỉnh sửa đơn hàng." });
+    }
+    return next();
+}
+
+module.exports = { requireAuthenticatedUser, requireAccountant };

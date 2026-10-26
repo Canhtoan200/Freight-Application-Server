@@ -1,6 +1,6 @@
 const express = require("express");
 const OrderController = require("../controllers/order.controller.js");
-const { requireAuthenticatedUser } = require("../middleware/auth.middleware.js");
+const { requireAuthenticatedUser, requireAccountant } = require("../middleware/auth.middleware.js");
 const orderRouter = express.Router();
 
 // Tạo api lấy hết tất cả danh sách các đơn hàng
@@ -35,4 +35,22 @@ orderRouter.put("/updateShippingStatus", (req, res) =>{
 orderRouter.post("/searchOrders", (req, res) =>{
     OrderController.searchOrders(req, res);
 });
+orderRouter.get(
+    "/accountant/:OrderID",
+    requireAuthenticatedUser,
+    requireAccountant,
+    (req, res) => OrderController.getAccountantOrder(req, res)
+);
+orderRouter.put(
+    "/accountant/:OrderID",
+    requireAuthenticatedUser,
+    requireAccountant,
+    (req, res) => OrderController.updateAccountantOrder(req, res)
+);
+orderRouter.put(
+    "/accountant/:OrderID/evidence/:endpoint",
+    requireAuthenticatedUser,
+    requireAccountant,
+    (req, res) => OrderController.saveDeliveryEvidence(req, res)
+);
 module.exports = orderRouter;
