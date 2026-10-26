@@ -8,13 +8,8 @@ async function getAllOrders() {
 }
 async function getOrdersByOrganization(organization) {
     const [rows] = await database.execute(
-        `SELECT DISTINCT shipping_orders.*
-         FROM shipping_orders
-         LEFT JOIN driver_order_details
-             ON driver_order_details.OrderIDs = shipping_orders.OrderID
-         WHERE shipping_orders.organization = ?
-            OR driver_order_details.organization = ?`,
-        [organization, organization]
+        "SELECT * FROM shipping_orders WHERE organization = ?",
+        [organization]
     );
     return rows;
 }
