@@ -59,7 +59,7 @@ async function createGuestOrder (req, res){
         [userID]
     );
     const user = users[0];
-    if (!user || !["Guest", "Admin"].includes(user.position)) {
+    if (!user || !["Guest", "Admin", "Partner"].includes(user.position)) {
         return res.status(403).json({ message: "Tài khoản không có quyền tạo đơn hàng." });
     }
     const organization = user.position === "Guest" ? user.organization : req.body.organization;
