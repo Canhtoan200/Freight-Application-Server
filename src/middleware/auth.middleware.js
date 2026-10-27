@@ -25,7 +25,7 @@ function requireAuthenticatedUser(req, res, next) {
 }
 
 function requireAccountant(req, res, next) {
-    if (req.authenticatedUser?.position !== "Accountant") {
+    if (!["Accountant", "AccountantPartner"].includes(req.authenticatedUser?.position)) {
         return res.status(403).json({ message: "Chỉ kế toán mới được chỉnh sửa đơn hàng." });
     }
     return next();

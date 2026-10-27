@@ -24,4 +24,16 @@ driverRouter.post("/createDriver", (req, res) =>{
 driverRouter.post("/createDriverOrderDetail", (req, res) =>{
     DriverController.createDriverOrderDetail(req, res);
 });
+driverRouter.get("/getAllDriverPartners", (req, res) => {
+    DriverController.getAllDriverPartners(req, res);
+});
+driverRouter.get("/getDriverPartnerIDBasedOnUserID", (req, res) => {
+    DriverController.getDriverPartnerIDBasedOnUserID(req, res);
+});
+driverRouter.get("/getDriverPartnerOrdersByID", (req, res) => {
+    DriverController.getDriverPartnerOrdersByID(req, res);
+});
+driverRouter.post("/createDriverPartnerOrderDetail", (req, res) => {
+    DriverController.createDriverPartnerOrderDetail(req, res);
+});
 module.exports = driverRouter;

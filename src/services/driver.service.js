@@ -79,6 +79,103 @@ async function createDriverOrderDetail (DriverIDs, OrderIDs){
         return { message: "Lỗi server", error: error.message };
     }
 }
+
+async function getAllDriverPartners() {
+    const [rows] = await database.execute(`
+        SELECT DriverPartnerIDs AS DriverIDs, accountID, driver_name, driver_link,
+            driver_license_plate_number, driver_phone_number, amount_of_gas,
+            money_amount_of_gas, the_remaining_volume_of_the_car,
+            the_remaining_weight_of_the_car, drop_off_distance, create_at
+        FROM driver_partners
+    `);
+    return rows;
+}
+async function getDriverPartnerIDBasedOnUserID(userID) {
+    const [rows] = await database.execute(
+        'SELECT DriverPartnerIDs FROM driver_partners WHERE accountID = ?',
+        [userID]
+    );
+    return rows.length > 0 ? rows[0].DriverPartnerIDs : null;
+}
+async function getDriverPartnerOrdersByID(driverPartnerID) {
+    const [rows] = await database.execute(
+        'SELECT * FROM driver_partners_order_details WHERE DriverPartnerIDs = ?',
+        [driverPartnerID]
+    );
+    return rows;
+}
+async function createDriverPartnerOrderDetail(driverPartnerID, orderIDs) {
+    if (!Number.isInteger(Number(driverPartnerID)) || Number(driverPartnerID) <= 0 ||
+        !Array.isArray(orderIDs) || orderIDs.length === 0 ||
+        orderIDs.some((id) => !Number.isInteger(Number(id)) || Number(id) <= 0)) {
+        const error = new Error("Mã tài xế hoặc danh sách đơn hàng không hợp lệ.");
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const connection = await database.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [driverRows] = await connection.execute(
+            `SELECT driver_name, driver_license_plate_number, driver_phone_number
+             FROM driver_partners WHERE DriverPartnerIDs = ? FOR UPDATE`,
+            [driverPartnerID]
+        );
+        if (driverRows.length === 0) {
+            const error = new Error("Không tìm thấy tài xế đối tác.");
+            error.statusCode = 404;
+            throw error;
+        }
+
+        const driver = driverRows[0];
+        let affectedRows = 0;
+        for (const rawOrderID of orderIDs) {
+            const orderID = Number(rawOrderID);
+            const [orders] = await connection.execute(
+                "SELECT OrderID FROM shipping_orders WHERE OrderID = ? FOR UPDATE",
+                [orderID]
+            );
+            if (orders.length === 0) {
+                const error = new Error(`Không tìm thấy đơn hàng #${orderID}.`);
+                error.statusCode = 404;
+                throw error;
+            }
+            const [existing] = await connection.execute(
+                `SELECT DriverOrderID FROM driver_partners_order_details
+                 WHERE DriverPartnerIDs = ? AND OrderIDs = ?`,
+                [driverPartnerID, orderID]
+            );
+            if (existing.length > 0) {
+                const error = new Error(`Đơn hàng #${orderID} đã được phân công cho tài xế này.`);
+                error.statusCode = 409;
+                throw error;
+            }
+            await connection.execute(
+                "INSERT INTO driver_partners_order_details (DriverPartnerIDs, OrderIDs) VALUES (?, ?)",
+                [driverPartnerID, orderID]
+            );
+            await connection.execute(
+                `UPDATE shipping_orders SET driver_name = ?, driver_license_plate = ?,
+                    driver_phone_number = ?, shipping_status = 'Tài xế đang đi!',
+                    order_dispatch_date = NOW() WHERE OrderID = ?`,
+                [
+                    driver.driver_name,
+                    driver.driver_license_plate_number,
+                    driver.driver_phone_number,
+                    orderID
+                ]
+            );
+            affectedRows += 1;
+        }
+        await connection.commit();
+        return { message: "Đã phân công đơn hàng cho tài xế đối tác.", affectedRows };
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
+}
 module.exports = {
     getAllDrivers,
     getAllDriverOrders,
@@ -86,5 +183,9 @@ module.exports = {
     getDriverIDBasedOnUserID,
     getDriverOrderBasedOnDriverID,
     createDriver,
-    createDriverOrderDetail
+    createDriverOrderDetail,
+    getAllDriverPartners,
+    getDriverPartnerIDBasedOnUserID,
+    getDriverPartnerOrdersByID,
+    createDriverPartnerOrderDetail
 }

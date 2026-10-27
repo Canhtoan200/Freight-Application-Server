@@ -55,6 +55,53 @@ async function createDriverOrderDetail (req, res){
     const result = await driverService.createDriverOrderDetail(DriverIDs, OrderIDs);
     res.status(200).json(result);
 }
+async function getAllDriverPartners(req, res) {
+    try {
+        const drivers = await driverService.getAllDriverPartners();
+        return res.status(200).json({ data: drivers });
+    } catch (error) {
+        console.error("Không thể tải đội xe đối tác:", error);
+        return res.status(500).json({ message: "Không thể tải đội xe đối tác." });
+    }
+}
+async function getDriverPartnerIDBasedOnUserID(req, res) {
+    const userID = Number(req.query.userID);
+    if (!Number.isInteger(userID) || userID <= 0) {
+        return res.status(400).json({ message: "Mã tài khoản không hợp lệ." });
+    }
+    try {
+        const driverID = await driverService.getDriverPartnerIDBasedOnUserID(userID);
+        if (!driverID) return res.status(404).json({ message: "Không tìm thấy hồ sơ tài xế đối tác." });
+        return res.status(200).json({ data: driverID });
+    } catch (error) {
+        console.error("Không thể tải hồ sơ tài xế đối tác:", error);
+        return res.status(500).json({ message: "Không thể tải hồ sơ tài xế đối tác." });
+    }
+}
+async function getDriverPartnerOrdersByID(req, res) {
+    const driverID = Number(req.query.driverPartnerID);
+    if (!Number.isInteger(driverID) || driverID <= 0) {
+        return res.status(400).json({ message: "Mã tài xế không hợp lệ." });
+    }
+    try {
+        const orders = await driverService.getDriverPartnerOrdersByID(driverID);
+        return res.status(200).json({ data: orders });
+    } catch (error) {
+        console.error("Không thể tải đơn được phân công cho tài xế đối tác:", error);
+        return res.status(500).json({ message: "Không thể tải đơn được phân công." });
+    }
+}
+async function createDriverPartnerOrderDetail(req, res) {
+    const { DriverPartnerIDs, OrderIDs } = req.body || {};
+    try {
+        const result = await driverService.createDriverPartnerOrderDetail(DriverPartnerIDs, OrderIDs);
+        return res.status(200).json(result);
+    } catch (error) {
+        if (error.statusCode) return res.status(error.statusCode).json({ message: error.message });
+        console.error("Không thể phân công đơn cho tài xế đối tác:", error);
+        return res.status(500).json({ message: "Không thể phân công đơn cho tài xế đối tác." });
+    }
+}
 module.exports = {
     getAllDrivers,
     getAllDriverOrders,
@@ -62,5 +109,9 @@ module.exports = {
     getDriverIDBasedOnUserID,
     getDriverOrderBasedOnDriverID,
     createDriver,
-    createDriverOrderDetail
+    createDriverOrderDetail,
+    getAllDriverPartners,
+    getDriverPartnerIDBasedOnUserID,
+    getDriverPartnerOrdersByID,
+    createDriverPartnerOrderDetail
 }
