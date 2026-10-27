@@ -6,16 +6,22 @@ async function getAllWagons() {
     const [rows] = await database.execute('SELECT * FROM shipping_wagons');
     return rows;
 }
-async function createWagonOrder(wagon_number, wagon_departure_date, wagon_arrival_date, wagon_route) {
+async function createWagonOrder(wagon_number, wagon_departure_date, wagon_arrival_date, wagon_route, wagon_type = "LOADING") {
+    const wagonType = String(wagon_type || "LOADING").toUpperCase();
+    if (!["LOADING", "UNLOADING"].includes(wagonType)) {
+        const error = new Error("Loại toa tàu phải là LOADING hoặc UNLOADING.");
+        error.statusCode = 400;
+        throw error;
+    }
     try {
         // 1. Thực hiện câu lệnh INSERT để tạo đơn hàng mới
         const insertQuery = `
                 INSERT INTO shipping_wagons (
-                    wagon_number, wagon_departure_date, wagon_arrival_date, wagon_route
-                ) VALUES (?, ?, ?, ?)
+                    wagon_number, wagon_departure_date, wagon_arrival_date, wagon_route, wagon_type
+                ) VALUES (?, ?, ?, ?, ?)
             `;
         const [insertResult] = await database.execute(insertQuery, [
-            wagon_number, wagon_departure_date, wagon_arrival_date, wagon_route
+            wagon_number, wagon_departure_date, wagon_arrival_date, wagon_route, wagonType
         ]);
         // 3. Trả về ID mới
         if (insertResult && insertResult.insertId) {
@@ -27,6 +33,49 @@ async function createWagonOrder(wagon_number, wagon_departure_date, wagon_arriva
     } catch (err) {
         console.error("Lỗi tạo toa tàu:", err);
         throw err; // Ném lỗi để controller có thể xử lý
+    }
+}
+async function convertWagonToUnloading(WagonID) {
+    const wagonId = Number(WagonID);
+    if (!Number.isInteger(wagonId) || wagonId <= 0) {
+        const error = new Error("Mã toa tàu không hợp lệ.");
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const connection = await database.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [rows] = await connection.execute(
+            "SELECT wagon_type FROM shipping_wagons WHERE WagonID = ? FOR UPDATE",
+            [wagonId]
+        );
+        if (rows.length === 0) {
+            const error = new Error("Không tìm thấy toa tàu.");
+            error.statusCode = 404;
+            throw error;
+        }
+        const wagon = rows[0];
+        if (String(wagon.wagon_type || "LOADING").toUpperCase() !== "LOADING") {
+            const error = new Error("Chỉ có thể chuyển toa xếp sang toa dỡ.");
+            error.statusCode = 409;
+            throw error;
+        }
+        await connection.execute(
+            "UPDATE shipping_wagons SET wagon_type = 'UNLOADING' WHERE WagonID = ?",
+            [wagonId]
+        );
+        await connection.commit();
+        return { WagonID: wagonId, wagon_type: "UNLOADING" };
+    } catch (error) {
+        try {
+            await connection.rollback();
+        } catch (rollbackError) {
+            console.error("Lỗi rollback khi chuyển toa sang toa dỡ:", rollbackError);
+        }
+        throw error;
+    } finally {
+        connection.release();
     }
 }
 async function getWagonDetailID(WagonID) {
@@ -113,6 +162,7 @@ async function createWagonDetail (WagonIDs, OrderIDs){
 module.exports = {
     getAllWagons,
     createWagonOrder,
+    convertWagonToUnloading,
     createWagonDetail,
     getWagonDetailID
 }

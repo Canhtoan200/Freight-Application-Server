@@ -8,11 +8,40 @@ async function getAllWagons (req, res){
     })
 }
 async function createWagonOrder (req, res){
-    const { wagon_number, wagon_departure_date, wagon_arrival_date, wagon_route } = req.body;
-    const wagonId = await wagonService.createWagonOrder(wagon_number, wagon_departure_date, wagon_arrival_date, wagon_route);
-    res.status(200).json({
-        message: "Create new wagon success with ID: " + wagonId
-    })
+    const { wagon_number, wagon_departure_date, wagon_arrival_date, wagon_route, wagon_type } = req.body;
+    try {
+        const wagonId = await wagonService.createWagonOrder(
+            wagon_number,
+            wagon_departure_date,
+            wagon_arrival_date,
+            wagon_route,
+            wagon_type
+        );
+        return res.status(200).json({
+            message: "Create new wagon success with ID: " + wagonId
+        });
+    } catch (error) {
+        if (error.statusCode === 400) {
+            return res.status(400).json({ message: error.message });
+        }
+        console.error("Lỗi tạo toa tàu:", error);
+        return res.status(500).json({ message: "Không thể tạo toa tàu." });
+    }
+}
+async function convertWagonToUnloading(req, res) {
+    try {
+        const wagon = await wagonService.convertWagonToUnloading(req.body?.WagonID);
+        return res.status(200).json({
+            message: "Đã chuyển toa xếp sang toa dỡ.",
+            data: wagon
+        });
+    } catch (error) {
+        if (error.statusCode) {
+            return res.status(error.statusCode).json({ message: error.message });
+        }
+        console.error("Lỗi chuyển toa xếp sang toa dỡ:", error);
+        return res.status(500).json({ message: "Không thể chuyển toa sang toa dỡ." });
+    }
 }
 async function getWagonDetailID (req, res){
     const { WagonIDs } = req.body;
@@ -37,6 +66,7 @@ async function createWagonDetail (req, res){
 module.exports = {
     getAllWagons,
     createWagonOrder,
+    convertWagonToUnloading,
     getWagonDetailID,
     createWagonDetail
 }
