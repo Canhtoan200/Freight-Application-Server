@@ -2,20 +2,32 @@ const database = require("../configs/db.configs.js");
 require("dotenv").config();
 
 async function getAllOrders() {
-    // thực hiện truy vấn để lấy tất cả các đơn hàng
-    const [rows] = await database.execute('SELECT * FROM shipping_orders');
+    const [rows] = await database.execute(`
+        SELECT o.*, dp.driver_link AS delivery_driver_link
+        FROM shipping_orders o
+        LEFT JOIN driver_partners_order_details dpod ON dpod.OrderIDs = o.OrderID
+        LEFT JOIN driver_partners dp ON dp.DriverPartnerIDs = dpod.DriverPartnerIDs
+    `);
     return rows;
 }
 async function getOrdersByOrganization(organization) {
-    const [rows] = await database.execute(
-        "SELECT * FROM shipping_orders WHERE organization = ?",
-        [organization]
-    );
+    const [rows] = await database.execute(`
+        SELECT o.*, dp.driver_link AS delivery_driver_link
+        FROM shipping_orders o
+        LEFT JOIN driver_partners_order_details dpod ON dpod.OrderIDs = o.OrderID
+        LEFT JOIN driver_partners dp ON dp.DriverPartnerIDs = dpod.DriverPartnerIDs
+        WHERE o.organization = ?
+    `, [organization]);
     return rows;
 }
 async function getOrderByID(OrderID) {
-    // thực hiện truy vấn để lấy đơn hàng theo ID
-    const [rows] = await database.execute('SELECT * FROM shipping_orders WHERE OrderID = ?', [OrderID]);
+    const [rows] = await database.execute(`
+        SELECT o.*, dp.driver_link AS delivery_driver_link
+        FROM shipping_orders o
+        LEFT JOIN driver_partners_order_details dpod ON dpod.OrderIDs = o.OrderID
+        LEFT JOIN driver_partners dp ON dp.DriverPartnerIDs = dpod.DriverPartnerIDs
+        WHERE o.OrderID = ? LIMIT 1
+    `, [OrderID]);
     return rows[0];
 }
 async function getAllOrderByStatus(shipping_status) {
