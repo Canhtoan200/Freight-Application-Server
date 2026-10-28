@@ -65,8 +65,38 @@ async function convertWagonToUnloading(WagonID) {
             "UPDATE shipping_wagons SET wagon_type = 'UNLOADING' WHERE WagonID = ?",
             [wagonId]
         );
+
+        const [details] = await connection.execute(
+            "SELECT OrderIDs FROM wagon_details WHERE WagonIDs = ?",
+            [wagonId]
+        );
+        let affectedOrders = 0;
+        for (const detail of details) {
+            const orderId = Number(detail.OrderIDs);
+            if (!Number.isInteger(orderId) || orderId <= 0) continue;
+
+            await connection.execute(
+                `UPDATE shipping_orders
+                 SET shipping_status = 'Đang dỡ hàng',
+                     delivery_driver_name = NULL,
+                     delivery_driver_license_plate = NULL,
+                     delivery_driver_phone_number = NULL
+                 WHERE OrderID = ?`,
+                [orderId]
+            );
+            await connection.execute(
+                "DELETE FROM driver_order_details WHERE OrderIDs = ?",
+                [orderId]
+            );
+            await connection.execute(
+                "DELETE FROM driver_partners_order_details WHERE OrderIDs = ?",
+                [orderId]
+            );
+            affectedOrders += 1;
+        }
+
         await connection.commit();
-        return { WagonID: wagonId, wagon_type: "UNLOADING" };
+        return { WagonID: wagonId, wagon_type: "UNLOADING", affectedOrders };
     } catch (error) {
         try {
             await connection.rollback();
