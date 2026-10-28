@@ -30,6 +30,9 @@ driverRouter.get("/getAllDriverPartners", (req, res) => {
 driverRouter.get("/getDriverPartnerIDBasedOnUserID", (req, res) => {
     DriverController.getDriverPartnerIDBasedOnUserID(req, res);
 });
+driverRouter.get("/getDriverPartnerByID", (req, res) => {
+    DriverController.getDriverPartnerByID(req, res);
+});
 driverRouter.get("/getDriverPartnerOrdersByID", (req, res) => {
     DriverController.getDriverPartnerOrdersByID(req, res);
 });

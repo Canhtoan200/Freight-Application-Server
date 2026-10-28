@@ -97,6 +97,16 @@ async function getDriverPartnerIDBasedOnUserID(userID) {
     );
     return rows.length > 0 ? rows[0].DriverPartnerIDs : null;
 }
+async function getDriverPartnerByID(driverPartnerID) {
+    const [rows] = await database.execute(`
+        SELECT DriverPartnerIDs AS DriverIDs, accountID, driver_name, driver_link,
+            driver_license_plate_number, driver_phone_number
+        FROM driver_partners
+        WHERE DriverPartnerIDs = ?
+        LIMIT 1
+    `, [driverPartnerID]);
+    return rows[0] ?? null;
+}
 async function getDriverPartnerOrdersByID(driverPartnerID) {
     const [rows] = await database.execute(
         'SELECT * FROM driver_partners_order_details WHERE DriverPartnerIDs = ?',
@@ -186,6 +196,7 @@ module.exports = {
     createDriverOrderDetail,
     getAllDriverPartners,
     getDriverPartnerIDBasedOnUserID,
+    getDriverPartnerByID,
     getDriverPartnerOrdersByID,
     createDriverPartnerOrderDetail
 }

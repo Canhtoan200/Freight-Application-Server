@@ -78,6 +78,20 @@ async function getDriverPartnerIDBasedOnUserID(req, res) {
         return res.status(500).json({ message: "Không thể tải hồ sơ tài xế đối tác." });
     }
 }
+async function getDriverPartnerByID(req, res) {
+    const driverID = Number(req.query.driverPartnerID);
+    if (!Number.isInteger(driverID) || driverID <= 0) {
+        return res.status(400).json({ message: "Mã tài xế không hợp lệ." });
+    }
+    try {
+        const driver = await driverService.getDriverPartnerByID(driverID);
+        if (!driver) return res.status(404).json({ message: "Không tìm thấy tài xế đối tác." });
+        return res.status(200).json({ data: driver });
+    } catch (error) {
+        console.error("Không thể tải hồ sơ tài xế đối tác:", error);
+        return res.status(500).json({ message: "Không thể tải hồ sơ tài xế đối tác." });
+    }
+}
 async function getDriverPartnerOrdersByID(req, res) {
     const driverID = Number(req.query.driverPartnerID);
     if (!Number.isInteger(driverID) || driverID <= 0) {
@@ -112,6 +126,7 @@ module.exports = {
     createDriverOrderDetail,
     getAllDriverPartners,
     getDriverPartnerIDBasedOnUserID,
+    getDriverPartnerByID,
     getDriverPartnerOrdersByID,
     createDriverPartnerOrderDetail
 }
