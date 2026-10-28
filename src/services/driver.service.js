@@ -150,20 +150,26 @@ async function createDriverPartnerOrderDetail(driverPartnerID, orderIDs) {
                 error.statusCode = 404;
                 throw error;
             }
-            const [existing] = await connection.execute(
+            const [existingAssignments] = await connection.execute(
                 `SELECT DriverOrderID FROM driver_partners_order_details
-                 WHERE DriverPartnerIDs = ? AND OrderIDs = ?`,
-                [driverPartnerID, orderID]
+                 WHERE OrderIDs = ?`,
+                [orderID]
             );
-            if (existing.length > 0) {
-                const error = new Error(`Đơn hàng #${orderID} đã được phân công cho tài xế này.`);
-                error.statusCode = 409;
-                throw error;
+            if (existingAssignments.length === 0) {
+                await connection.execute(
+                    "INSERT INTO driver_partners_order_details (DriverPartnerIDs, OrderIDs) VALUES (?, ?)",
+                    [driverPartnerID, orderID]
+                );
+            } else {
+                await connection.execute(
+                    "DELETE FROM driver_partners_order_details WHERE OrderIDs = ?",
+                    [orderID]
+                );
+                await connection.execute(
+                    "INSERT INTO driver_partners_order_details (DriverPartnerIDs, OrderIDs) VALUES (?, ?)",
+                    [driverPartnerID, orderID]
+                );
             }
-            await connection.execute(
-                "INSERT INTO driver_partners_order_details (DriverPartnerIDs, OrderIDs) VALUES (?, ?)",
-                [driverPartnerID, orderID]
-            );
             await connection.execute(
                 `UPDATE shipping_orders SET delivery_driver_name = ?, delivery_driver_license_plate = ?,
                     delivery_driver_phone_number = ?, shipping_status = 'Đang giao hàng',
