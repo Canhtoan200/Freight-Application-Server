@@ -166,7 +166,7 @@ async function createDriverPartnerOrderDetail(driverPartnerID, orderIDs) {
             );
             await connection.execute(
                 `UPDATE shipping_orders SET delivery_driver_name = ?, delivery_driver_license_plate = ?,
-                    delivery_driver_phone_number = ?, shipping_status = 'Tài xế đang đi!',
+                    delivery_driver_phone_number = ?, shipping_status = 'Đang giao hàng',
                     order_dispatch_date = NOW() WHERE OrderID = ?`,
                 [
                     driver.driver_name,
