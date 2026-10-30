@@ -7,8 +7,8 @@ async function getAllDrivers() {
     const [rows] = await database.execute('SELECT * FROM drivers');
     return rows;
 }
-async function getDriverPosition(driverID) {
-    const [rows] = await database.execute('SELECT driver_position FROM drivers WHERE DriverIDs = ?', [driverID]);
+async function getDriverPosition() {
+    const [rows] = await database.execute('SELECT * FROM driver_position');
     return rows.length > 0 ? rows[0].driver_position : null;
 }
 async function getAllDriverOrders() {
