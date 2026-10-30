@@ -33,6 +33,24 @@ async function getDriverPosition (req, res) {
         console.error("Không thể tải vị trí tài xế:", error);
         return res.status(500).json({ message: "Không thể tải vị trí tài xế." });
     }}
+async function updateDriverPosition(req, res) {
+    const driverID = Number(req.body?.driverID);
+    const latitude = Number(req.body?.latitude);
+    const longitude = Number(req.body?.longitude);
+    if (!Number.isInteger(driverID) || driverID <= 0 ||
+        !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
+        !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+        return res.status(400).json({ message: "Mã tài xế hoặc tọa độ không hợp lệ." });
+    }
+    try {
+        const position = await driverService.updateDriverPosition(driverID, latitude, longitude);
+        return res.status(200).json({ message: "Đã cập nhật vị trí tài xế.", data: position });
+    } catch (error) {
+        if (error.statusCode) return res.status(error.statusCode).json({ message: error.message });
+        console.error("Không thể cập nhật vị trí tài xế:", error);
+        return res.status(500).json({ message: "Không thể cập nhật vị trí tài xế." });
+    }
+}
 async function getAllDriverOrders (req, res){
     const driverOrders = await driverService.getAllDriverOrders();
     console.log(driverOrders);
@@ -145,6 +163,7 @@ module.exports = {
     getAllDrivers,
     getAllDriverOrders,
     getDriverPosition,
+    updateDriverPosition,
     getDriverByDriverID,
     getDriverIDBasedOnUserID,
     getDriverOrderBasedOnDriverID,

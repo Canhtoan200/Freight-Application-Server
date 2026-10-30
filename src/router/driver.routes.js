@@ -9,6 +9,9 @@ driverRouter.get("/getAllDrivers", (req, res) =>{
 driverRouter.get("/getDriverPosition", (req, res) =>{
     DriverController.getDriverPosition(req, res);
 });
+driverRouter.post("/updateDriverPosition", (req, res) =>{
+    DriverController.updateDriverPosition(req, res);
+});
 driverRouter.get("/getAllDriverOrders", (req, res) =>{
     DriverController.getAllDriverOrders(req, res);
 });

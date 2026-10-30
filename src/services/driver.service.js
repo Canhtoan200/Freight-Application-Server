@@ -6,6 +6,38 @@ async function getAllDrivers() {
     const [rows] = await database.execute('SELECT * FROM drivers');
     return rows;
 }
+async function updateDriverPosition(driverID, latitude, longitude) {
+    const [driverRows] = await database.execute(
+        'SELECT DriverIDs FROM drivers WHERE DriverIDs = ?',
+        [driverID]
+    );
+    if (driverRows.length === 0) {
+        const error = new Error('Không tìm thấy tài xế.');
+        error.statusCode = 404;
+        throw error;
+    }
+
+    const [positions] = await database.execute(
+        'SELECT positionID FROM driver_position WHERE driverID = ?',
+        [driverID]
+    );
+    if (positions.length > 0) {
+        await database.execute(
+            'UPDATE driver_position SET latitude = ?, longitude = ? WHERE driverID = ?',
+            [latitude, longitude, driverID]
+        );
+    } else {
+        await database.execute(
+            'INSERT INTO driver_position (driverID, latitude, longitude) VALUES (?, ?, ?)',
+            [driverID, latitude, longitude]
+        );
+    }
+    const [rows] = await database.execute(
+        'SELECT * FROM driver_position WHERE driverID = ?',
+        [driverID]
+    );
+    return rows[0] ?? null;
+}
 async function getAllDriverOrders() {
     // thực hiện truy vấn để lấy tất cả các đơn hàng của tài xế
     const [rows] = await database.execute('SELECT * FROM driver_order_details');
@@ -207,6 +239,7 @@ module.exports = {
     getAllDrivers,
     getAllDriverOrders,
     getDriverPosition,
+    updateDriverPosition,
     getDriverByDriverID,
     getDriverIDBasedOnUserID,
     getDriverOrderBasedOnDriverID,
