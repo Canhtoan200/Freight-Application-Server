@@ -11,9 +11,17 @@ async function getAllDriverOrders() {
     const [rows] = await database.execute('SELECT * FROM driver_order_details');
     return rows;
 }
-async function getDriverPosition(positionID) {
-    const [rows] = await database.execute('SELECT * FROM driver_position WHERE positionID = ?', [positionID]);
-    return rows.length > 0 ? rows[0].driver_position : null;
+async function getDriverPosition(positionID, driverID) {
+    if (positionID) {
+        const [rows] = await database.execute('SELECT * FROM driver_position WHERE positionID = ?', [positionID]);
+        return rows[0] ?? null;
+    }
+    if (driverID) {
+        const [rows] = await database.execute('SELECT * FROM driver_position WHERE driverID = ?', [driverID]);
+        return rows[0] ?? null;
+    }
+    const [rows] = await database.execute('SELECT * FROM driver_position');
+    return rows;
 }
 async function getDriverByDriverID(driverID) {
     const [rows] = await database.execute('SELECT * FROM drivers WHERE DriverIDs = ?', [driverID]);

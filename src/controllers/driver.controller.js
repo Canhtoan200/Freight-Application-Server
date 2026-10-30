@@ -15,13 +15,17 @@ async function getAllDriverOrders (req, res){
     })
 }
 async function getDriverPosition (req, res) {
-    const positionID = Number(req.query.positionID ?? req.query.driverID);
-    if (!Number.isInteger(positionID) || positionID <= 0) {
+    const rawPositionID = req.query.positionID;
+    const rawDriverID = req.query.driverID;
+    const positionID = rawPositionID == null ? null : Number(rawPositionID);
+    const driverID = rawDriverID == null ? null : Number(rawDriverID);
+    if ((positionID !== null && (!Number.isInteger(positionID) || positionID <= 0)) ||
+        (driverID !== null && (!Number.isInteger(driverID) || driverID <= 0))) {
         return res.status(400).json({ message: "Mã vị trí tài xế không hợp lệ." });
     }
     try {
-        const driverPosition = await driverService.getDriverPosition(positionID);
-        if (!driverPosition) {
+        const driverPosition = await driverService.getDriverPosition(positionID, driverID);
+        if (!driverPosition || (Array.isArray(driverPosition) && driverPosition.length === 0)) {
             return res.status(404).json({ message: "Không tìm thấy vị trí của tài xế." });
         }
         return res.status(200).json({ data: driverPosition });
