@@ -6,6 +6,9 @@ const driverRouter = express.Router();
 driverRouter.get("/getAllDrivers", (req, res) =>{
     DriverController.getAllDrivers(req, res);
 });
+driverRouter.get("/getDriverPosition", (req, res) =>{
+    DriverController.getDriverPosition(req, res);
+});
 driverRouter.get("/getAllDriverOrders", (req, res) =>{
     DriverController.getAllDriverOrders(req, res);
 });

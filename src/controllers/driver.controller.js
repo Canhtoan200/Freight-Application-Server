@@ -15,6 +15,23 @@ async function getAllDriverOrders (req, res){
         data: driverOrders
     })
 }
+async function getDriverPosition (req, res) {
+    const { driverID } = req.query;
+    const driverPosition = await driverService.getDriverPosition(driverID);
+    if (!driverPosition) {
+        return res.status(404).json({ message: "Không tìm thấy vị trí của tài xế." });
+    }
+    res.status(200).json({
+        data: driverPosition
+    });
+}
+async function getAllDriverOrders (req, res){
+    const driverOrders = await driverService.getAllDriverOrders();
+    console.log(driverOrders);
+    res.status(200).json({
+        data: driverOrders
+    })
+}
 async function getAllDriverOrders (req, res){
     const driverOrders = await driverService.getAllDriverOrders();
     console.log(driverOrders);
@@ -119,6 +136,7 @@ async function createDriverPartnerOrderDetail(req, res) {
 module.exports = {
     getAllDrivers,
     getAllDriverOrders,
+    getDriverPosition,
     getDriverByDriverID,
     getDriverIDBasedOnUserID,
     getDriverOrderBasedOnDriverID,

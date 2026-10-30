@@ -7,10 +7,18 @@ async function getAllDrivers() {
     const [rows] = await database.execute('SELECT * FROM drivers');
     return rows;
 }
+async function getDriverPosition(driverID) {
+    const [rows] = await database.execute('SELECT driver_position FROM drivers WHERE DriverIDs = ?', [driverID]);
+    return rows.length > 0 ? rows[0].driver_position : null;
+}
 async function getAllDriverOrders() {
     // thực hiện truy vấn để lấy tất cả các đơn hàng của tài xế
     const [rows] = await database.execute('SELECT * FROM driver_order_details');
     return rows;
+}
+async function getDriverPosition(positionID) {
+    const [rows] = await database.execute('SELECT * FROM driver_position WHERE positionID = ?', [positionID]);
+    return rows.length > 0 ? rows[0].driver_position : null;
 }
 async function getDriverByDriverID(driverID) {
     const [rows] = await database.execute('SELECT * FROM drivers WHERE DriverIDs = ?', [driverID]);
@@ -195,6 +203,7 @@ async function createDriverPartnerOrderDetail(driverPartnerID, orderIDs) {
 module.exports = {
     getAllDrivers,
     getAllDriverOrders,
+    getDriverPosition,
     getDriverByDriverID,
     getDriverIDBasedOnUserID,
     getDriverOrderBasedOnDriverID,
