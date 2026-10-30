@@ -9,7 +9,7 @@ async function getAllDrivers() {
 }
 async function getDriverPosition() {
     const [rows] = await database.execute('SELECT * FROM driver_position');
-    return rows.length > 0 ? rows[0].driver_position : null;
+    return rows;
 }
 async function getAllDriverOrders() {
     // thực hiện truy vấn để lấy tất cả các đơn hàng của tài xế
