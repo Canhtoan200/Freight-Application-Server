@@ -1,14 +1,9 @@
 const database = require("../configs/db.configs.js");
-const { get } = require("../router/driver.routes.js");
 require("dotenv").config();
 
 async function getAllDrivers() {
     // thực hiện truy vấn để lấy tất cả các tài xế
     const [rows] = await database.execute('SELECT * FROM drivers');
-    return rows;
-}
-async function getDriverPosition() {
-    const [rows] = await database.execute('SELECT * FROM driver_position');
     return rows;
 }
 async function getAllDriverOrders() {

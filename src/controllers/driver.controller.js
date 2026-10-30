@@ -1,4 +1,3 @@
-const { get } = require("../router/driver.routes.js");
 const driverService = require("../services/driver.service.js");
 
 async function getAllDrivers (req, res){
@@ -16,15 +15,20 @@ async function getAllDriverOrders (req, res){
     })
 }
 async function getDriverPosition (req, res) {
-    const { driverID } = req.query;
-    const driverPosition = await driverService.getDriverPosition(driverID);
-    if (!driverPosition) {
-        return res.status(404).json({ message: "Không tìm thấy vị trí của tài xế." });
+    const positionID = Number(req.query.positionID ?? req.query.driverID);
+    if (!Number.isInteger(positionID) || positionID <= 0) {
+        return res.status(400).json({ message: "Mã vị trí tài xế không hợp lệ." });
     }
-    res.status(200).json({
-        data: driverPosition
-    });
-}
+    try {
+        const driverPosition = await driverService.getDriverPosition(positionID);
+        if (!driverPosition) {
+            return res.status(404).json({ message: "Không tìm thấy vị trí của tài xế." });
+        }
+        return res.status(200).json({ data: driverPosition });
+    } catch (error) {
+        console.error("Không thể tải vị trí tài xế:", error);
+        return res.status(500).json({ message: "Không thể tải vị trí tài xế." });
+    }}
 async function getAllDriverOrders (req, res){
     const driverOrders = await driverService.getAllDriverOrders();
     console.log(driverOrders);
