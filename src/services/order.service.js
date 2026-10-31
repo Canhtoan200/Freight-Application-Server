@@ -66,20 +66,67 @@ async function createGuestOrder(order_name, sender_name, receiver_name, sender_a
     }
 }
 async function updateShippingStatus(OrderID, shipping_status) {
+    const connection = await database.getConnection();
     try {
-        const [result] = await database.execute(
+        await connection.beginTransaction();
+        const [result] = await connection.execute(
             'UPDATE shipping_orders SET shipping_status = ? WHERE OrderID = ?',
             [shipping_status, OrderID]
         );
-        if (result.affectedRows > 0) return true;
-        const [rows] = await database.execute(
+        if (result.affectedRows === 0) {
+            const [rows] = await connection.execute(
             "SELECT OrderID FROM shipping_orders WHERE OrderID = ?",
             [OrderID]
-        );
-        return rows.length > 0;
+            );
+            await connection.commit();
+            return rows.length > 0;
+        }
+
+        if (shipping_status === "Đã giao hàng") {
+            const [details] = await connection.execute(
+                `SELECT wd.WagonIDs
+                 FROM wagon_details wd
+                 JOIN shipping_wagons sw ON sw.WagonID = wd.WagonIDs
+                 WHERE wd.OrderIDs = ? AND UPPER(COALESCE(sw.wagon_type, 'LOADING')) = 'UNLOADING'
+                 LIMIT 1`,
+                [OrderID]
+            );
+
+            if (details.length > 0) {
+                const wagonId = Number(details[0].WagonIDs);
+                const [remainingOrders] = await connection.execute(
+                    `SELECT COUNT(*) AS remainingCount
+                     FROM wagon_details wd
+                     JOIN shipping_orders so ON so.OrderID = wd.OrderIDs
+                     WHERE wd.WagonIDs = ? AND so.shipping_status <> 'Đã giao hàng'`,
+                    [wagonId]
+                );
+
+                if (Number(remainingOrders[0]?.remainingCount || 0) === 0) {
+                    await connection.execute(
+                        "DELETE FROM wagon_details WHERE WagonIDs = ?",
+                        [wagonId]
+                    );
+                    await connection.execute(
+                        "DELETE FROM shipping_wagons WHERE WagonID = ?",
+                        [wagonId]
+                    );
+                }
+            }
+        }
+
+        await connection.commit();
+        return true;
     } catch (err) {
+        try {
+            await connection.rollback();
+        } catch (rollbackError) {
+            console.error("Lỗi rollback khi cập nhật trạng thái đơn hàng:", rollbackError);
+        }
         console.error("Lỗi cập nhật trạng thái:", err);
         throw err;
+    } finally {
+        connection.release();
     }
 }
 async function updateAccountantOrder(OrderID, fields) {
