@@ -2,7 +2,20 @@ const database = require("../configs/db.configs.js");
 require("dotenv").config();
 
 async function getAllWagons() {
-    // thực hiện truy vấn để lấy tất cả các đơn hàng
+    await database.execute(
+        `DELETE sw FROM shipping_wagons sw
+         WHERE EXISTS (
+             SELECT 1 FROM wagon_details completed_details
+             WHERE completed_details.WagonIDs = sw.WagonID
+         )
+         AND NOT EXISTS (
+             SELECT 1
+             FROM wagon_details wd
+             JOIN shipping_orders so ON so.OrderID = wd.OrderIDs
+             WHERE wd.WagonIDs = sw.WagonID
+               AND so.shipping_status <> 'Đã giao hàng'
+         )`
+    );
     const [rows] = await database.execute('SELECT * FROM shipping_wagons');
     return rows;
 }

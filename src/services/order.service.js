@@ -87,7 +87,7 @@ async function updateShippingStatus(OrderID, shipping_status) {
                 `SELECT wd.WagonIDs
                  FROM wagon_details wd
                  JOIN shipping_wagons sw ON sw.WagonID = wd.WagonIDs
-                 WHERE wd.OrderIDs = ? AND UPPER(COALESCE(sw.wagon_type, 'LOADING')) = 'UNLOADING'
+                 WHERE wd.OrderIDs = ?
                  LIMIT 1`,
                 [OrderID]
             );
