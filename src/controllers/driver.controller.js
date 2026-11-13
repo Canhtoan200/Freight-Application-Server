@@ -36,14 +36,14 @@ async function getDriverPosition (req, res) {
 async function updateDriverPosition(req, res) {
     const driverID = Number(req.body?.driverID);
     const latitude = Number(req.body?.latitude);
-    const longitude = Number(req.body?.longitude);
+    const longtitude = Number(req.body?.longitude);
     if (!Number.isInteger(driverID) || driverID <= 0 ||
         !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
-        !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+        !Number.isFinite(longtitude) || longtitude < -180 || longtitude > 180) {
         return res.status(400).json({ message: "Mã tài xế hoặc tọa độ không hợp lệ." });
     }
     try {
-        const position = await driverService.updateDriverPosition(driverID, latitude, longitude);
+        const position = await driverService.updateDriverPosition(driverID, latitude, longtitude);
         return res.status(200).json({ message: "Đã cập nhật vị trí tài xế.", data: position });
     } catch (error) {
         if (error.statusCode) return res.status(error.statusCode).json({ message: error.message });

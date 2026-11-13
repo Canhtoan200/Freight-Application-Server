@@ -6,7 +6,7 @@ async function getAllDrivers() {
     const [rows] = await database.execute('SELECT * FROM drivers');
     return rows;
 }
-async function updateDriverPosition(driverID, latitude, longitude) {
+async function updateDriverPosition(driverID, latitude, longtitude) {
     const [driverRows] = await database.execute(
         'SELECT DriverIDs FROM drivers WHERE DriverIDs = ?',
         [driverID]
@@ -23,13 +23,13 @@ async function updateDriverPosition(driverID, latitude, longitude) {
     );
     if (positions.length > 0) {
         await database.execute(
-            'UPDATE driver_position SET latitude = ?, longitude = ? WHERE driverID = ?',
-            [latitude, longitude, driverID]
+            'UPDATE driver_position SET latitude = ?, longtitude = ? WHERE driverID = ?',
+            [latitude, longtitude, driverID]
         );
     } else {
         await database.execute(
-            'INSERT INTO driver_position (driverID, latitude, longitude) VALUES (?, ?, ?)',
-            [driverID, latitude, longitude]
+            'INSERT INTO driver_position (driverID, latitude, longtitude) VALUES (?, ?, ?)',
+            [driverID, latitude, longtitude]
         );
     }
     const [rows] = await database.execute(
