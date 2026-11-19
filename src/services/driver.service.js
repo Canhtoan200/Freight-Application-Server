@@ -5,7 +5,12 @@ async function getAllDrivers() {
     const [rows] = await database.execute(`
         SELECT d.*, dp.latitude AS position_latitude, dp.longtitude AS position_longitude
         FROM drivers d
-        LEFT JOIN driver_position dp ON dp.driverID = d.DriverIDs
+        LEFT JOIN driver_position dp
+            ON dp.positionID = (
+                SELECT MAX(latest.positionID)
+                FROM driver_position latest
+                WHERE latest.driverID = d.DriverIDs
+            )
     `);
     return rows;
 }
