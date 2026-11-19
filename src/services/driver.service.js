@@ -2,8 +2,11 @@ const database = require("../configs/db.configs.js");
 require("dotenv").config();
 
 async function getAllDrivers() {
-    // thực hiện truy vấn để lấy tất cả các tài xế
-    const [rows] = await database.execute('SELECT * FROM drivers');
+    const [rows] = await database.execute(`
+        SELECT d.*, dp.latitude AS position_latitude, dp.longtitude AS position_longitude
+        FROM drivers d
+        LEFT JOIN driver_position dp ON dp.driverID = d.DriverIDs
+    `);
     return rows;
 }
 async function updateDriverPosition(driverID, latitude, longtitude) {
