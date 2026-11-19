@@ -82,39 +82,6 @@ async function updateShippingStatus(OrderID, shipping_status) {
             return rows.length > 0;
         }
 
-        if (shipping_status === "Đã giao hàng") {
-            const [details] = await connection.execute(
-                `SELECT wd.WagonIDs
-                 FROM wagon_details wd
-                 JOIN shipping_wagons sw ON sw.WagonID = wd.WagonIDs
-                 WHERE wd.OrderIDs = ?
-                 LIMIT 1`,
-                [OrderID]
-            );
-
-            if (details.length > 0) {
-                const wagonId = Number(details[0].WagonIDs);
-                const [remainingOrders] = await connection.execute(
-                    `SELECT COUNT(*) AS remainingCount
-                     FROM wagon_details wd
-                     JOIN shipping_orders so ON so.OrderID = wd.OrderIDs
-                     WHERE wd.WagonIDs = ? AND so.shipping_status <> 'Đã giao hàng'`,
-                    [wagonId]
-                );
-
-                if (Number(remainingOrders[0]?.remainingCount || 0) === 0) {
-                    await connection.execute(
-                        "DELETE FROM wagon_details WHERE WagonIDs = ?",
-                        [wagonId]
-                    );
-                    await connection.execute(
-                        "DELETE FROM shipping_wagons WHERE WagonID = ?",
-                        [wagonId]
-                    );
-                }
-            }
-        }
-
         await connection.commit();
         return true;
     } catch (err) {
